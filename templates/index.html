@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Comptoir - Épicerie fine & artisanale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark">LC</span>
+      <div class="brand-text">
+        <span class="brand-name">Le Comptoir</span>
+        <span class="brand-tag">Épicerie fine & artisanale</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center;">
+      <a href="/login" class="btn btn-ghost"
+        style="margin-right: 15px; padding: 8px 16px; text-decoration: none;">Espace Admin</a>
+      <button class="cart-toggle" id="cart-toggle" aria-label="Ouvrir le panier">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>Panier</span>
+        <span class="cart-badge" id="cart-badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <p class="hero-eyebrow">Sélection du comptoir livrée fraîche chaque semaine</p>
+    <h1 class="hero-title">Des produits d'artisans,<br>choisis un par un.</h1>
+    <p class="hero-sub">Fromages affinés, épicerie fine, vins de propriétés : chaque commande devient un ticket, comme
+      au vrai comptoir.</p>
+    <div class="chip-row" id="category-chips">
+      <button class="chip active" data-id="">Tout voir</button>
+      <!-- chips de catégories injectées en JS -->
+    </div>
+  </section>
+
+  <!-- ================= CATALOGUE ================= -->
+  <main class="catalogue">
+    <div class="catalogue-grid" id="produits-grid">
+      <!-- cartes produits injectées en JS -->
+    </div>
+    <p class="catalogue-empty" id="catalogue-empty" hidden>Aucun produit dans cette catégorie pour le moment.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>Le Comptoir - Démonstration FastAPI + SQLAlchemy + SQLite.</p>
+  </footer>
+
+  <!-- ================= OVERLAY ================= -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ================= CART / TICKET DRAWER ================= -->
+  <aside class="ticket-drawer" id="ticket-drawer" aria-hidden="true">
+    <div class="ticket-drawer-inner">
+      <button class="ticket-close" id="ticket-close" aria-label="Fermer">✕</button>
+
+      <!-- ---- ÉTAPE 1 : PANIER ---- -->
+      <section class="ticket-step" id="step-cart" data-step="cart">
+        <header class="ticket-head">
+          <span class="ticket-head-label">Votre panier</span>
+          <h2>Ticket en cours</h2>
+        </header>
+
+        <div class="ticket-lines" id="cart-lines">
+          <!-- lignes de panier injectées en JS -->
+        </div>
+
+        <p class="ticket-empty" id="cart-empty-msg" hidden>Votre panier est vide pour l'instant.<br>Ajoutez un produit
+          du comptoir.</p>
+
+        <div class="ticket-perforation"></div>
+
+        <div class="ticket-total-row">
+          <span>Sous-total</span>
+          <span class="mono" id="cart-subtotal">0,00 €</span>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="go-to-checkout" disabled>Passer la commande</button>
+      </section>
+
+      <!-- ---- ÉTAPE 2 : CHECKOUT ---- -->
+      <!-- داخل ملف index.html -->
+      <section class="ticket-step" id="step-checkout" data-step="checkout" hidden>
+        <header class="ticket-head">
+          <button class="ticket-back" id="back-to-cart" aria-label="Retour au panier"> </button>
+          <span class="ticket-head-label">Paiement</span>
+          <h2>Finaliser la commande</h2>
+        </header>
+        <form id="checkout-form">
+          <label class="field">
+            <span>Mode de paiement</span>
+            <select name="mode_paiement" required>
+              <option value="Carte bancaire">Carte bancaire</option>
+              <option value="Espèces">Espèces</option>
+            </select>
+          </label>
+          <div class="ticket-total-row">
+            <span>Total à régler</span>
+            <span class="mono" id="checkout-total">0,00 €</span>
+          </div>
+          <p class="form-error" id="checkout-error" hidden></p>
+          <button type="submit" class="btn btn-primary btn-block" id="submit-order-btn">
+            Confirmer la commande
+          </button>
+        </form>
+      </section>
+
+      <!-- ---- ÉTAPE 3 : CONFIRMATION (TICKET IMPRIMÉ) ---- -->
+      <section class="ticket-step" id="step-confirmation" data-step="confirmation" hidden>
+        <div class="printed-ticket" id="printed-ticket">
+          <!-- contenu du ticket injecté en JS -->
+        </div>
+        <button class="btn btn-ghost btn-block" id="new-order-btn">Passer une nouvelle commande</button>
+      </section>
+
+    </div>
+  </aside>
+
+  <script src="/static/script.js?v=2"></script>
+</body>
+
+</html>
