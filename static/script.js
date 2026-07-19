@@ -53,6 +53,7 @@ const el = {
   fieldsExisting: document.getElementById("fields-existing-client"),
   existingHint: document.getElementById("existing-client-hint"),
   printedTicket: document.getElementById("printed-ticket"),
+  printTicketBtn: document.getElementById("print-ticket-btn"),
   newOrderBtn: document.getElementById("new-order-btn"),
 };
 
@@ -261,6 +262,13 @@ function setClientMode(mode) {
   state.clientMode = mode;
   el.fieldsNew.hidden = mode !== "new";
   el.fieldsExisting.hidden = mode !== "existing";
+  el.fieldsNew.querySelectorAll("input").forEach((input) => {
+    input.disabled = mode !== "new";
+  });
+  el.fieldsExisting.querySelectorAll("input").forEach((input) => {
+    input.disabled = mode !== "existing";
+    input.required = mode === "existing";
+  });
   [...el.clientModeToggle.querySelectorAll(".segmented-btn")].forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
@@ -269,72 +277,64 @@ function setClientMode(mode) {
 }
 
 async function handleCheckoutSubmit(event) {
-    event.preventDefault();
-    el.checkoutError.hidden = true;
-    
-    const formData = new FormData(el.checkoutForm);
-    const modePaiement = formData.get("mode_paiement");
-    
-    const payload = {
-        mode_paiement: modePaiement,
-        id_client: 1, 
-        lignes: cartItems().map((item) => ({
-            id_produit: item.produit.id_produit,
-            quantite_cmd: item.quantite,
-        })),
+  event.preventDefault();
+  el.checkoutError.hidden = true;
+
+  if (cartItems().length === 0) {
+    showCheckoutError("Votre panier est vide.");
+    showStep("cart");
+    return;
+  }
+
+  const formData = new FormData(el.checkoutForm);
+
+  // Build payload based on client mode
+  let payload = {
+    mode_paiement: formData.get("mode_paiement"),
+    lignes: cartItems().map((item) => ({
+      id_produit: item.produit.id_produit,
+      quantite_cmd: item.quantite,
+    })),
+  };
+
+  if (state.clientMode === "new") {
+    payload.client = {
+      nom: formData.get("nom"),
+      prenom: formData.get("prenom"),
+      tel: formData.get("tel"),
+      email: formData.get("email"),
+      mot_de_passe: "client123" // Default password for new account
     };
+  } else {
+    payload.id_client = parseInt(formData.get("id_client"));
+  }
 
-    el.submitOrderBtn.disabled = true;
-    el.submitOrderBtn.textContent = "Envoi en cours...";
+  el.submitOrderBtn.disabled = true;
+  el.submitOrderBtn.textContent = "Envoi...";
 
-    try {
-        const commande = await fetchJSON("/api/commandes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
+  try {
+    const commande = await fetchJSON("/api/commandes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-        // --- التحديث الجذري هنا ---
-        console.log("الطلب تم بنجاح، جاري مسح السلة...");
-        
-        state.lastCommande = commande;
-        state.cart = {}; 
-        
-        // مسح تام من الذاكرة المحلية
-        localStorage.removeItem(CART_STORAGE_KEY); 
-        
-        // تحديث الواجهة بقوة
-        el.cartBadge.textContent = "0";      
-        el.cartLines.innerHTML = "";         
-        el.cartSubtotal.textContent = "0,00 €"; 
-        
-        renderConfirmation(commande);
-        showStep("confirmation");
-        
-    } catch (err) {
-        showCheckoutError(err.message);
-        console.error("خطأ:", err);
-    } finally {
-        el.submitOrderBtn.disabled = false;
-        el.submitOrderBtn.textContent = "Confirmer la commande";
-    }
+    // Clear cart after success
+    state.cart = {};
+    localStorage.removeItem(CART_STORAGE_KEY);
+    updateCartBadge();
+
+    renderConfirmation(commande);
+    showStep("confirmation");
+
+  } catch (err) {
+    el.checkoutError.textContent = "Erreur: " + err.message;
+    el.checkoutError.hidden = false;
+  } finally {
+    el.submitOrderBtn.disabled = false;
+    el.submitOrderBtn.textContent = "Confirmer la commande";
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -441,6 +441,11 @@ function bindEvents() {
   });
 
   el.checkoutForm.addEventListener("submit", handleCheckoutSubmit);
+
+  el.printTicketBtn.addEventListener("click", () => {
+    if (!el.printedTicket.innerHTML.trim()) return;
+    window.print();
+  });
 
   // تحديث الزر لمسح البيانات القديمة عند بدء طلب جديد
   el.newOrderBtn.addEventListener("click", () => {

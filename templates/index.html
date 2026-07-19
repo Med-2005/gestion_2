@@ -103,7 +103,29 @@
           <span class="ticket-head-label">Paiement</span>
           <h2>Finaliser la commande</h2>
         </header>
-        <form id="checkout-form">
+        <form id="checkout-form" onsubmit="event.preventDefault(); return false;">
+          <!-- Tabs for Client Mode -->
+          <div class="segmented" id="client-mode-toggle">
+            <button type="button" class="segmented-btn active" data-mode="new">Nouveau client</button>
+            <button type="button" class="segmented-btn" data-mode="existing">J'ai un identifiant</button>
+          </div>
+
+          <!-- New Client Fields -->
+          <div id="fields-new-client">
+            <label class="field"><span>Nom</span><input type="text" name="nom" required></label>
+            <label class="field"><span>Prénom</span><input type="text" name="prenom" required></label>
+            <label class="field"><span>Téléphone</span><input type="tel" name="tel"></label>
+            <label class="field"><span>Email</span><input type="email" name="email" required></label>
+          </div>
+
+          <!-- Existing Client Fields -->
+          <div id="fields-existing-client" hidden>
+            <label class="field"><span>Identifiant client (id_client)</span><input type="number"
+                name="id_client"></label>
+            <p id="existing-client-hint" class="field-hint"></p>
+          </div>
+
+          <!-- Payment -->
           <label class="field">
             <span>Mode de paiement</span>
             <select name="mode_paiement" required>
@@ -111,11 +133,14 @@
               <option value="Espèces">Espèces</option>
             </select>
           </label>
+
           <div class="ticket-total-row">
-            <span>Total à régler</span>
+            <span>Total</span>
             <span class="mono" id="checkout-total">0,00 €</span>
           </div>
-          <p class="form-error" id="checkout-error" hidden></p>
+
+          <p class="field-hint" id="checkout-error" hidden></p>
+
           <button type="submit" class="btn btn-primary btn-block" id="submit-order-btn">
             Confirmer la commande
           </button>
@@ -123,11 +148,12 @@
       </section>
 
       <!-- ---- ÉTAPE 3 : CONFIRMATION (TICKET IMPRIMÉ) ---- -->
-      <section class="ticket-step" id="step-confirmation" data-step="confirmatiorrrn" hidden>
+      <section class="ticket-step" id="step-confirmation" data-step="confirmation" hidden>
         <div class="printed-ticket" id="printed-ticket">
           <!-- contenu du ticket injecté en JS -->
         </div>
-        <button class="btn btn-ghost btn-block" id="new-order-btn">Passer une nouvelle commande</button>
+        <button class="btn btn-primary btn-block print-hidden" id="print-ticket-btn" type="button">Imprimer le ticket</button>
+        <button class="btn btn-ghost btn-block print-hidden" id="new-order-btn">Passer une nouvelle commande</button>
       </section>
 
     </div>

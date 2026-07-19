@@ -178,6 +178,15 @@ def create_client(payload: schemas.ClientCreate, db: Session = Depends(get_db)):
     db.refresh(client)
     return client
 
+
+@app.get("/api/clients/{id_client}", response_model=schemas.ClientOut)
+def get_client(id_client: int, db: Session = Depends(get_db)):
+    """Retourne un client par identifiant pour la vérification côté commande."""
+    client = db.query(models.Client).filter(models.Client.id_client == id_client).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client introuvable.")
+    return client
+
 @app.post("/api/login")
 def login(payload: schemas.ClientLogin, db: Session = Depends(get_db)):
     """Vérifie les identifiants et retourne un token."""
@@ -244,7 +253,9 @@ def create_commande(payload: schemas.CommandeCreate, db: Session = Depends(get_d
                 models.Client.email == payload.client.email
             ).first()
         if not client:
-            client = models.Client(**payload.client.model_dump())
+            client_data = payload.client.model_dump()
+            client_data["mot_de_passe"] = get_password_hash(client_data["mot_de_passe"])
+            client = models.Client(**client_data)
             db.add(client)
             db.flush()  # obtient id_client sans committer
     else:
